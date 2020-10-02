@@ -1,0 +1,1 @@
+db.users.insertOne{firstName:'do',lastName:'duong',email:'duong98kk@gmail.com',password:'duong98kk'}
