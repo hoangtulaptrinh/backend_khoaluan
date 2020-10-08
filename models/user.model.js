@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema({
   money: String,
   role: String,
   course: Array,
+  care: Array,
+  date_create: String,
 });
 
 //tham số thứ 3 là tên collection muốn lưu vào

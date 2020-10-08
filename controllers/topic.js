@@ -1,7 +1,7 @@
 import find from "lodash/find";
 import findIndex from "lodash/findIndex";
+import moment from "moment";
 import multer from "multer";
-import path from "path";
 import shortid from "shortid";
 
 import TopicModel from "../models/topic.model";
@@ -156,6 +156,7 @@ export const createThread = async (req, res, next) => {
         !!req.files && !!req.files.outline && req.files.outline[0].filename
       }`,
       comment: [],
+      date_create: moment().format(),
     };
 
     !req.files.image && delete newThread.image;
@@ -323,6 +324,7 @@ export const addComment = async (req, res, next) => {
       outline: `http://127.0.0.1:8080/outlines/${
         !!req.files && !!req.files.outline && req.files.outline[0].filename
       }`,
+      date_create: moment().format(),
     };
 
     !req.files.image && delete newComment.image;

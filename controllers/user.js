@@ -1,6 +1,7 @@
 import find from "lodash/find";
 import findIndex from "lodash/findIndex";
 import jwt from "jsonwebtoken";
+import moment from "moment";
 
 import CourseModel from "../models/course.model.js";
 import UserModel from "../models/user.model";
@@ -56,6 +57,8 @@ export const createUser = async (req, res) => {
     money: 0,
     role: "normal",
     course: null,
+    care: [],
+    date_create: moment().format(),
   });
   try {
     await newUser.save();
@@ -181,12 +184,32 @@ export const buyCourse = async (req, res, next) => {
 
   let courseUpdate;
 
-  !user.course && (courseUpdate = [{ id: idCourse, progress: 0 }]); // nếu ban đầu chưa mua bài nào thì cho vào array danh sách course
+  !user.course &&
+    (courseUpdate = [
+      {
+        id: idCourse,
+        name: course.name,
+        lesson: course.lesson,
+        progress: 0,
+        cost: Number(course.cost),
+        date_buy: moment().format(),
+      },
+    ]); // nếu ban đầu chưa mua bài nào thì cho vào array danh sách course
 
   if (!!user.course && !!user.course.length) {
     if (!find(user.course, { id: idCourse })) {
       // nếu user chưa mua bài học đó thì thêm bài học vào
-      courseUpdate = [...user.course, { id: idCourse, progress: 0 }];
+      courseUpdate = [
+        ...user.course,
+        {
+          id: idCourse,
+          name: course.name,
+          lesson: course.lesson,
+          progress: 0,
+          cost: Number(course.cost),
+          date_buy: moment().format(),
+        },
+      ];
     } else {
       // nếu user đã mua bài học đó thì báo lỗi lại cho client
       res.status(500).json({
@@ -217,6 +240,16 @@ export const updateProcessCourse = async (req, res, next) => {
 
   const course = req.body.course;
 
+  const infoCourse = await CourseModel.findOne(
+    { _id: course.id },
+    (err, doc) => {
+      if (err) {
+        next({ status: 404 });
+        return;
+      }
+    }
+  );
+
   const user = await UserModel.findOne({ _id: id }, (err, doc) => {
     if (err) {
       next({ status: 404 });
@@ -232,6 +265,9 @@ export const updateProcessCourse = async (req, res, next) => {
     next({ status: 404 });
     return;
   }
+
+  course.name = infoCourse.name;
+  course.lesson = infoCourse.lesson;
 
   cloneUserCourse.splice(indexCourse, 1, course);
 

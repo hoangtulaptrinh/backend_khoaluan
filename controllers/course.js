@@ -1,7 +1,7 @@
 import find from "lodash/find";
 import findIndex from "lodash/findIndex";
+import moment from "moment";
 import multer from "multer";
-import path from "path";
 
 import CourseModel from "../models/course.model";
 import TopicModel from "../models/topic.model";
@@ -112,6 +112,7 @@ export const createCourse = async (req, res, next) => {
       lesson: [],
       image: `http://127.0.0.1:8080/images/${req.files.image[0].filename}`,
       outline: `http://127.0.0.1:8080/outlines/${req.files.outline[0].filename}`,
+      date_create: moment().format(),
     });
 
     const newTopic = new TopicModel({
@@ -250,6 +251,7 @@ export const createLesson = async (req, res, next) => {
       video: `http://127.0.0.1:8080/videos/${
         !!req.files && !!req.files.video && req.files.video[0].filename
       }`,
+      date_create: moment().format(),
     };
 
     CourseModel.findOneAndUpdate(

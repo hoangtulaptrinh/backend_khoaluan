@@ -8,6 +8,7 @@ const courseSchema = new mongoose.Schema({
   lesson: Array,
   image: String,
   outline: String,
+  date_create: String,
 });
 
 //tham số thứ 3 là tên collection muốn lưu vào
