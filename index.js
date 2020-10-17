@@ -6,6 +6,7 @@ import courseRoutes from "./routes/course";
 import mongoose from "mongoose";
 import topicRoutes from "./routes/topic";
 import userRoutes from "./routes/user";
+import categoryRoutes from "./routes/category";
 
 const app = express();
 const port = 5000;
@@ -28,6 +29,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 app.use("/courses", courseRoutes);
 app.use("/topics", topicRoutes);
 app.use("/users", userRoutes);
+app.use("/categorys", categoryRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({
