@@ -139,6 +139,7 @@ export const createThread = async (req, res, next) => {
     }
 
     const newThread = {
+      idThread: id,
       id: shortid.generate(),
       author: {
         id: authorUser.id,
