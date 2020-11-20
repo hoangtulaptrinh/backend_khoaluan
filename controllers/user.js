@@ -38,8 +38,6 @@ export const createUser = async (req, res) => {
   !req.body.email && errors.push("Email is Required");
   !req.body.password && errors.push("Password is Required");
   !req.body.name && errors.push("Name is Required");
-  !req.body.date_of_birth && errors.push("Date_of_birth is Required");
-  !req.body.phone_number && errors.push("Phone_number is Required");
 
   const user = await UserModel.findOne({ email: req.body.email }); // tìm ra user có mail truyền vào
 
@@ -57,6 +55,8 @@ export const createUser = async (req, res) => {
     money: 0,
     role: "normal",
     course: null,
+    date_of_birth: moment().format("DD/MM/YYYY"),
+    phone_number: "",
     care: [],
     date_create: moment().format(),
   });
