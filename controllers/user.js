@@ -2,6 +2,7 @@ import find from "lodash/find";
 import findIndex from "lodash/findIndex";
 import jwt from "jsonwebtoken";
 import moment from "moment";
+import multer from "multer";
 
 import CourseModel from "../models/course.model.js";
 import UserModel from "../models/user.model";
@@ -52,6 +53,7 @@ export const createUser = async (req, res) => {
 
   const newUser = new UserModel({
     ...req.body,
+    image: null,
     money: 0,
     role: "normal",
     course: null,
@@ -125,22 +127,95 @@ export const changePassword = async (req, res, next) => {
   }
 };
 
-export const updateInfo = async (req, res, next) => {
-  const id = req.params.id;
+const diskStorage = multer.diskStorage({
+  destination: (req, file, callback) => {
+    // Định nghĩa nơi file upload sẽ được lưu lại
+    file.fieldname === "image" && callback(null, "uploads/images");
+    file.fieldname === "outline" && callback(null, "uploads/outlines");
+    file.fieldname === "video" && callback(null, "uploads/videos");
+  },
+  filename: (req, file, callback) => {
+    // image
+    if (file.fieldname === "image") {
+      // ở đây các bạn có thể làm bất kỳ điều gì với cái file nhé.
+      // Mình ví dụ chỉ cho phép tải lên các loại ảnh png & jpg
 
-  const user = await UserModel.findOne({ _id: id });
-
-  if (!user) {
-    next({ status: 404 });
-    return;
-  }
-
-  UserModel.findOneAndUpdate({ _id: id }, { ...req.body }, (err, doc) => {
-    if (err) {
-      err.status = 500;
-      return next(err);
+      const math = ["image/png", "image/jpeg"];
+      if (math.indexOf(file.mimetype) === -1) {
+        const errorMess = `The file <strong>${file.originalname}</strong> is invalid. Only allowed to upload image jpeg or png.`;
+        return callback(errorMess, null);
+      }
+      // Tên của file thì mình nối thêm một cái nhãn thời gian để đảm bảo không bị trùng.
+      const filename = `${Date.now()}-hoangtulaptrinh-${file.originalname}`;
+      callback(null, filename);
     }
-    return res.status(200).json({ success: true });
+
+    // outline
+    if (file.fieldname === "outline") {
+      // ở đây các bạn có thể làm bất kỳ điều gì với cái file nhé.
+
+      // Tên của file thì mình nối thêm một cái nhãn thời gian để đảm bảo không bị trùng.
+      const filename = `${Date.now()}-hoangtulaptrinh-${file.originalname}`;
+      callback(null, filename);
+    }
+
+    if (file.fieldname === "video") {
+      // ở đây các bạn có thể làm bất kỳ điều gì với cái file nhé.
+
+      // Tên của file thì mình nối thêm một cái nhãn thời gian để đảm bảo không bị trùng.
+      const filename = `${Date.now()}-hoangtulaptrinh-${file.originalname}`;
+      callback(null, filename);
+    }
+  },
+});
+
+const uploadFile = multer({ storage: diskStorage }).fields([
+  {
+    name: "image",
+    maxCount: 1,
+  },
+]);
+
+export const updateInfo = async (req, res, next) => {
+  uploadFile(req, res, async (error) => {
+    const id = req.params.id;
+
+    const user = await UserModel.findOne({ _id: id });
+
+    if (!user) {
+      next({ status: 404 });
+      return;
+    }
+
+    // Nếu có lỗi thì trả về lỗi cho client.
+    // Ví dụ như upload một file không phải file ảnh theo như cấu hình của mình bên trên
+    if (error) {
+      return res.send(`Error when trying to upload: ${error}`);
+    }
+    // Không có lỗi thì lưu lại cái url ảnh gửi về cho client.
+    // Đồng thời file đã được lưu vào thư mục uploads
+
+    const newUser = {
+      ...req.body,
+      image: `http://127.0.0.1:8080/images/${
+        !!req.files && !!req.files.image && req.files.image[0].filename
+      }`,
+    };
+
+    if (!req.files) {
+      delete newUser.image;
+    } else {
+      !req.files.image && delete newUser.image;
+    }
+    console.log(newUser);
+
+    UserModel.findOneAndUpdate({ _id: id }, { ...newUser }, (err, doc) => {
+      if (err) {
+        err.status = 500;
+        return next(err);
+      }
+      return res.status(200).json({ success: true });
+    });
   });
 };
 
